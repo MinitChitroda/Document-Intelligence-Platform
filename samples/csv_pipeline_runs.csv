@@ -1,0 +1,17 @@
+run_id,dag_name,run_date,start_time,end_time,status,docs_processed,docs_failed,duration_sec,triggered_by
+RUN-001,ingestion_dag,2024-01-10,02:00:01,02:14:33,success,142,3,812,schedule
+RUN-002,nightly_batch,2024-01-10,03:00:00,03:47:22,SUCCESS,850,0,2842,Schedule
+RUN-003,dbt_run_dag,2024-01-10,04:00:00,04:08:11,success,,,491,schedule
+RUN-004,ingestion_dag,2024-01-11,02:00:03,02:19:44,success,198,7,1181,schedule
+RUN-005,nightly_batch,2024-01-11,03:00:00,,failed,400,400,,schedule
+RUN-006,dbt_run_dag,2024-01-11,04:00:00,04:09:02,success,,,542,schedule
+RUN-007,ingestion_dag,2024-01-12,02:00:01,02:15:50,success,163,1,949,schedule
+RUN-004,ingestion_dag,2024-01-11,02:00:03,02:19:44,success,198,7,1181,schedule
+RUN-008,nightly_batch,2024-01-12,03:00:00,03:51:09,success,920,2,3069,schedule
+RUN-009,dbt_run_dag,2024-01-12,,04:07:44,success,,,457,manual
+RUN-010,ingestion_dag,01/13/2024,02:00:02,02:22:10,success,211,4,1328,schedule
+RUN-011,NIGHTLY_BATCH,2024-01-13,03:00:00,04:01:14,success,1003,0,3674,schedule
+RUN-012,dbt_run_dag,2024-01-13,04:00:00,04:10:33,warning,,,633,schedule
+RUN-013,ingestion_dag,2024-01-14,02:00:00,02:13:01,success,N/A,N/A,781,backfill
+RUN-014,nightly_batch,2024-01-14,03:00:00,03:44:55,success,788,1,2695,schedule
+RUN-015,dbt_run_dag,2024-01-14,04:00:00,04:07:18,success,,,438,schedule

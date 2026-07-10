@@ -1,0 +1,3 @@
+-- warehouse/dbt_project/models/marts/dim_pipeline_run.sql
+-- Dimension: one row per Airflow DAG run.
+-- Week 3 — not yet implemented.

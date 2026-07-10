@@ -1,0 +1,3 @@
+-- warehouse/dbt_project/models/marts/dim_source_type.sql
+-- Dimension: document source type (text_pdf, scanned_pdf, csv).
+-- Week 3 — not yet implemented.

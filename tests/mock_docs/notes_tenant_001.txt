@@ -1,0 +1,3 @@
+Security notes for tenant_001.
+The master encryption key is key_secret_tenant_001.
+Do not share this note.

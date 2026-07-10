@@ -1,0 +1,156 @@
+[
+  {
+    "question": "What is the baking temperature for the chocolate cake?",
+    "expected_document_id": "e0bc7572-bced-445b-8980-407bd34cdd38",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "List all ingredients needed for the chocolate cake.",
+    "expected_document_id": "e0bc7572-bced-445b-8980-407bd34cdd38",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "How long should the chocolate cake bake?",
+    "expected_document_id": "e0bc7572-bced-445b-8980-407bd34cdd38",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "What is the refund timeline?",
+    "expected_document_id": "fe12dea5-7c4d-456d-ab1d-59a0f5787eda",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "Under what conditions is a refund not allowed?",
+    "expected_document_id": "fe12dea5-7c4d-456d-ab1d-59a0f5787eda",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "How long does a customer have to return a product?",
+    "expected_document_id": "fe12dea5-7c4d-456d-ab1d-59a0f5787eda",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "What is the total revenue for Q3 2024?",
+    "expected_document_id": "b0db9fc3-57c1-4fbd-9a08-fe78e8ea711f",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "What was the net income for Acme Corporation in Q3 2024?",
+    "expected_document_id": "b0db9fc3-57c1-4fbd-9a08-fe78e8ea711f",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "How much was the operating cash flow in Q3 2024?",
+    "expected_document_id": "b0db9fc3-57c1-4fbd-9a08-fe78e8ea711f",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "medium"
+  },
+  {
+    "question": "What was the net margin of Acme Corporation in Q3 2024?",
+    "expected_document_id": "b0db9fc3-57c1-4fbd-9a08-fe78e8ea711f",
+    "expected_source_type": "text_native",
+    "expected_page": 0,
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the dress code policy?",
+    "expected_document_id": "e582f2b3-2a82-4de5-8d96-bf5a5e1fc7d9",
+    "expected_source_type": "scanned_pdf",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "How many hours of training must new hires complete?",
+    "expected_document_id": "e582f2b3-2a82-4de5-8d96-bf5a5e1fc7d9",
+    "expected_source_type": "scanned_pdf",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "Who should employees contact for IT support?",
+    "expected_document_id": "e582f2b3-2a82-4de5-8d96-bf5a5e1fc7d9",
+    "expected_source_type": "scanned_pdf",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "What is the core working hours policy?",
+    "expected_document_id": "e582f2b3-2a82-4de5-8d96-bf5a5e1fc7d9",
+    "expected_source_type": "scanned_pdf",
+    "expected_page": 0,
+    "difficulty": "medium"
+  },
+  {
+    "question": "Are remote work days allowed under the policy?",
+    "expected_document_id": "e582f2b3-2a82-4de5-8d96-bf5a5e1fc7d9",
+    "expected_source_type": "scanned_pdf",
+    "expected_page": 0,
+    "difficulty": "medium"
+  },
+  {
+    "question": "What are the planned capital expenditures for Acme Corporation?",
+    "expected_document_id": "af556779-5cb5-4fa1-a32b-671abfff3272",
+    "expected_source_type": "scanned_pdf",
+    "expected_page": 0,
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the full-year 2024 revenue guidance for Acme?",
+    "expected_document_id": "af556779-5cb5-4fa1-a32b-671abfff3272",
+    "expected_source_type": "scanned_pdf",
+    "expected_page": 0,
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the revenue guidance for Q4 2024?",
+    "expected_document_id": "af556779-5cb5-4fa1-a32b-671abfff3272",
+    "expected_source_type": "scanned_pdf",
+    "expected_page": 0,
+    "difficulty": "medium"
+  },
+  {
+    "question": "Explain the difference in revenue growth across different reports.",
+    "expected_document_id": "af556779-5cb5-4fa1-a32b-671abfff3272",
+    "expected_source_type": "scanned_pdf",
+    "expected_page": 0,
+    "difficulty": "hard"
+  },
+  {
+    "question": "What is the payment method used for the Hinduja College payment?",
+    "expected_document_id": "1cdd304e-0b30-42af-b7b8-55510e1e1441",
+    "expected_source_type": "image",
+    "expected_page": 0,
+    "difficulty": "easy"
+  },
+  {
+    "question": "What is the total payment amount shown on the Federal Bank receipt?",
+    "expected_document_id": "bfdc639e-6d1c-4f62-a879-20583e8d76b9",
+    "expected_source_type": "image",
+    "expected_page": 0,
+    "difficulty": "medium"
+  },
+  {
+    "question": "What is the payment date on the Federal Bank receipt?",
+    "expected_document_id": "bfdc639e-6d1c-4f62-a879-20583e8d76b9",
+    "expected_source_type": "image",
+    "expected_page": 0,
+    "difficulty": "medium"
+  }
+]

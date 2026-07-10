@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: dim_source_type
+    columns:
+      - name: source_type
+        tests:
+          - not_null
+          
+  - name: dim_pipeline_run
+    columns:
+      - name: run_id
+        tests:
+          - unique
+          - not_null
+
+  - name: dim_document
+    columns:
+      - name: document_id
+        tests:
+          - not_null
+      - name: version
+        tests:
+          - not_null
+
+  - name: fact_document_processing
+    columns:
+      - name: processing_id
+        tests:
+          - unique
+          - not_null
+      - name: document_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_document')
+              field: document_id
+      - name: pipeline_run_id
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_pipeline_run')
+              field: run_id

@@ -1,0 +1,17 @@
+fastapi
+uvicorn
+sqlalchemy
+psycopg2-binary
+kafka-python
+pytest
+# sample generation & extraction
+numpy
+reportlab
+pillow
+PyMuPDF
+httpx
+python-multipart==0.0.9
+opencv-python-headless==4.10.0.84
+pytesseract==0.3.13
+dbt-core<1.9
+dbt-postgres==1.8.2

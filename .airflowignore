@@ -1,0 +1,11 @@
+\.venv
+\.git
+postgres_data
+infra
+batch
+extraction
+quality
+samples
+storage
+warehouse
+tests

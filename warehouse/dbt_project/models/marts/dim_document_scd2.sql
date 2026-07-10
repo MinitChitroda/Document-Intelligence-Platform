@@ -1,0 +1,3 @@
+-- warehouse/dbt_project/models/marts/dim_document_scd2.sql
+-- SCD Type 2 dimension: tracks reprocessing history (valid_from / valid_to).
+-- Week 3 — not yet implemented.

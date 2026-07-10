@@ -1,0 +1,18 @@
+order_id,customer_name,customer_email,order_date,product_sku,quantity,unit_price_usd,status,region
+ORD-1001,Alice Johnson,alice@example.com,2024-01-15,SKU-A001,2,29.99,completed,North America
+ORD-1002,Bob Smith,bob.smith@corp.io,2024/01/16,SKU-B002,1,149.00,shipped,Europe
+ORD-1003,CAROL WILLIAMS,,2024-01-17,SKU-A001,5,29.99,Completed,APAC
+ORD-1004,dave O'Brien,dave@startup.co,01-18-2024,SKU-C003,,89.50,pending,north america
+ORD-1005,Eve Nakamura,eve.n@jpmail.jp,2024-01-18,SKU-B002,3,149.00,completed,APAC
+ORD-1006,Frank Müller,f.muller@de.com,2024-01-19,SKU-D004,10,,cancelled,Europe
+ORD-1002,Bob Smith,bob.smith@corp.io,2024/01/16,SKU-B002,1,149.00,shipped,Europe
+ORD-1007,,grace@example.org,2024-01-20,SKU-A001,1,29.99,completed,North America
+ORD-1008,Henry Park,henry@parkco.kr,2024-01-21,SKU-E005,2,200.00,SHIPPED,APAC
+ORD-1009,Isabel Ferreira,isabel.f@pt.net,2024-01-22,SKU-C003,4,89.50,completed,Europe
+ORD-1010,Jack Li,jack.li@cn.example,2024-01-23,SKU-F006,7,15.00,pending,
+ORD-1011,Kate Brown,kate@example.com,2024-01-24,SKU-A001,N/A,29.99,completed,North America
+ORD-1012,Liam Murphy,liam@ie.example,2024-01-25,SKU-B002,2,149.00,Shipped,Europe
+ORD-1001,Alice Johnson,alice@example.com,2024-01-15,SKU-A001,2,29.99,completed,North America
+ORD-1013,Mia Santos,mia.santos@br.net,2024-01-26,SKU-G007,3,55.00,completed,South America
+ORD-1014,Noah Kim,noah@kr.example,26/01/2024,SKU-C003,1,89.50,pending,APAC
+ORD-1015,Olivia Chen,olivia@sg.example,2024-01-27,SKU-H008,6,$44.99,completed,APAC

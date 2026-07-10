@@ -1,0 +1,237 @@
+# infra/docker-compose.yml
+#
+# Local development stack for the Document Data Platform.
+# Services included here (Week 1+):
+#   - Kafka 3.8 (KRaft mode — no Zookeeper)
+#   - Postgres 15
+#   - Airflow (LocalExecutor)
+#   - Qdrant (self-hosted, Week 5 — vector store for RAG)
+#
+# Memory budget for a ~6 GB laptop running alongside an IDE:
+#   Kafka:    640 MB  (JVM heap 384 MB + overhead)
+#   Postgres: 384 MB  (shared_buffers 128 MB + overhead)
+#   Total:   ~1.0 GB  — leaves ~5 GB for OS, IDE, venv
+#
+# Usage:
+#   cd infra/
+#   docker compose up -d
+#   docker compose ps          # watch (healthy) status
+#   docker compose logs -f     # tail logs
+#   docker compose down        # stop (volumes persist)
+#   docker compose down -v     # stop + wipe volumes
+
+services:
+
+  # ---------------------------------------------------------------------------
+  # Kafka 3.8 — KRaft mode (no Zookeeper)
+  # Image: apache/kafka (official Apache image)
+  # Env vars: KAFKA_<PROPERTY> where dots become underscores, uppercased
+  #   e.g.  KAFKA_NODE_ID  ->  node.id
+  # ---------------------------------------------------------------------------
+  kafka:
+    image: apache/kafka:3.8.0
+    container_name: ddp_kafka
+    hostname: kafka
+    ports:
+      - "9092:9092"     # PLAINTEXT — host clients (FastAPI, kafka-python, tests)
+    environment:
+      # KRaft identity
+      KAFKA_NODE_ID: 1
+      KAFKA_PROCESS_ROLES: broker,controller
+      KAFKA_CONTROLLER_QUORUM_VOTERS: 1@kafka:9093
+
+      # Listeners
+      #   PLAINTEXT  — external access from host on port 9092
+      #   INTERNAL   — container-to-container traffic on port 29092
+      #   CONTROLLER — KRaft controller on port 9093 (internal only)
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,INTERNAL://0.0.0.0:29092,CONTROLLER://0.0.0.0:9093
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://localhost:9092,INTERNAL://kafka:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+
+      # Topic defaults (single-node dev cluster)
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_AUTO_CREATE_TOPICS_ENABLE: "true"
+      KAFKA_NUM_PARTITIONS: 1
+      KAFKA_DEFAULT_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+
+      # Log retention
+      KAFKA_LOG_RETENTION_HOURS: 168        # 7 days
+      KAFKA_LOG_SEGMENT_BYTES: 104857600    # 100 MB
+
+      # JVM heap — well under the 640 MB container limit
+      KAFKA_HEAP_OPTS: "-Xmx384m -Xms256m"
+
+    mem_limit: 640m
+    memswap_limit: 640m     # no swap — predictable OOM behaviour
+
+    healthcheck:
+      # apache/kafka ships kafka scripts under /opt/kafka/bin/
+      test:
+        - CMD-SHELL
+        - /opt/kafka/bin/kafka-topics.sh --bootstrap-server localhost:9092 --list
+      interval: 15s
+      timeout: 10s
+      retries: 8
+      start_period: 35s     # KRaft needs ~20 s to elect a leader on first boot
+
+    volumes:
+      - kafka_data:/var/lib/kafka/data
+
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Postgres 15 — Bronze landing tables + Gold star-schema warehouse
+  # ---------------------------------------------------------------------------
+  postgres:
+    image: postgres:15-alpine       # alpine = ~80 MB vs ~400 MB for full image
+    container_name: ddp_postgres
+    hostname: postgres
+    ports:
+      - "55432:5432"
+    environment:
+      POSTGRES_DB: document_platform
+      POSTGRES_USER: postgres
+      POSTGRES_HOST_AUTH_METHOD: trust
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8 --locale=C"
+
+    # Memory tuning scaled for 384 MB container limit.
+    # Passed as individual -c flags (list form avoids shell quoting issues).
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=128MB"
+      - "-c"
+      - "effective_cache_size=256MB"
+      - "-c"
+      - "work_mem=4MB"
+      - "-c"
+      - "maintenance_work_mem=32MB"
+      - "-c"
+      - "max_connections=50"
+      - "-c"
+      - "wal_buffers=8MB"
+      - "-c"
+      - "checkpoint_completion_target=0.9"
+      - "-c"
+      - "log_min_duration_statement=500"
+
+    mem_limit: 384m
+    memswap_limit: 384m
+
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U postgres -d document_platform
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 15s
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+    restart: unless-stopped
+
+  # ---------------------------------------------------------------------------
+  # Airflow (LocalExecutor) — Orchestrates ingestion and PySpark batch
+  # ---------------------------------------------------------------------------
+  airflow-init:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.airflow
+    container_name: ddp_airflow_init
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres@postgres:5432/document_platform
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+    # "version" is just a dummy command; we will run init via a shell hook or manually
+    # Actually, the standard init command for airflow in docker is:
+    command: >
+      bash -c "airflow db migrate &&
+      airflow users create --username admin --firstname Admin --lastname User --role Admin --email admin@example.com --password admin"
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  airflow-webserver:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.airflow
+    container_name: ddp_airflow_webserver
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres@postgres:5432/document_platform
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - PYTHONPATH=/opt/airflow/dags/ddp
+    volumes:
+      - ../:/opt/airflow/dags/ddp
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    command: webserver
+
+  airflow-scheduler:
+    build:
+      context: ..
+      dockerfile: infra/Dockerfile.airflow
+    container_name: ddp_airflow_scheduler
+    restart: unless-stopped
+    environment:
+      - AIRFLOW__DATABASE__SQL_ALCHEMY_CONN=postgresql+psycopg2://postgres@postgres:5432/document_platform
+      - AIRFLOW__CORE__EXECUTOR=LocalExecutor
+      - AIRFLOW__CORE__LOAD_EXAMPLES=False
+      - PYTHONPATH=/opt/airflow/dags/ddp
+      - DATABASE_URL=postgresql://postgres@postgres:5432/document_platform
+    volumes:
+      - ../:/opt/airflow/dags/ddp
+    depends_on:
+      postgres:
+        condition: service_healthy
+      airflow-init:
+        condition: service_completed_successfully
+    command: scheduler
+
+  # ---------------------------------------------------------------------------
+  # Qdrant — self-hosted vector database for RAG (Week 5)
+  # REST API:  http://localhost:6333
+  # gRPC:      localhost:6334
+  # Dashboard: http://localhost:6333/dashboard
+  # ---------------------------------------------------------------------------
+  qdrant:
+    image: qdrant/qdrant:v1.9.2
+    container_name: ddp_qdrant
+    hostname: qdrant
+    ports:
+      - "6333:6333"     # REST + dashboard
+      - "6334:6334"     # gRPC
+    volumes:
+      - qdrant_data:/qdrant/storage
+    mem_limit: 512m
+    memswap_limit: 512m
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD-SHELL", "curl -sf http://localhost:6333/healthz || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+# ---------------------------------------------------------------------------
+# Named volumes — survive container restarts; docker compose down -v to wipe
+# ---------------------------------------------------------------------------
+volumes:
+  kafka_data:
+    driver: local
+  postgres_data:
+    driver: local
+  qdrant_data:
+    driver: local

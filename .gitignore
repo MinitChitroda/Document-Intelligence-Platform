@@ -1,0 +1,72 @@
+# Python
+.venv/
+venv/
+ENV/
+env/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.coverage
+htmlcov/
+.mypy_cache/
+
+# Environments / Secrets
+.env
+.env.local
+.env.production
+.env.development
+.env.staging
+.env.secret
+*.env
+
+# IDEs
+.vscode/
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.swp
+
+# Docker
+docker/volumes/
+.docker/
+*docker-compose.override.yml
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+
+# Local Data / Pipeline Outputs
+data/
+failed/
+curated/
+raw/
+
+# DBT target / log files
+target/
+dbt.log
+warehouse/logs/
+warehouse/target/
+
+# Temporary / Debug Logs & Assets
+*.log
+log_image.txt
+samples/ocr_comparison_results.txt
+samples/verified_preprocessed.png
+debug_preprocessed_page0.png
+debug_preprocessed_invoice.png
+
+# Production Cleanup Ignores
+scratch/
+scratch_*.py
+scratch_*.json
+*_results.json
+pdf-forge-exports/
+structure.txt

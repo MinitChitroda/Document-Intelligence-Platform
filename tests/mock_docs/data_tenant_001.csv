@@ -1,0 +1,4 @@
+id,item,price,tenant
+1,Widget A,10.00,tenant_001
+2,Widget B,20.00,tenant_001
+3,Total Inventory Value,$100,tenant_001

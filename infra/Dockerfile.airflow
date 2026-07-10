@@ -1,0 +1,24 @@
+FROM apache/airflow:2.9.2-python3.11
+
+USER root
+
+# Install dependencies: Java for PySpark, Tesseract & OpenCV requirements
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    openjdk-17-jre-headless \
+    tesseract-ocr \
+    libgl1 \
+    && apt-get autoremove -yqq --purge \
+    && apt-get clean \
+    && rm -rf /var/lib/apt/lists/*
+
+USER airflow
+
+# We copy the requirements file to install project dependencies.
+# The actual requirements.txt will be mounted or copied during build context,
+# but to keep it simple, we can just install what we need directly.
+RUN pip install --no-cache-dir \
+    fastapi uvicorn sqlalchemy psycopg2-binary kafka-python pytest \
+    numpy reportlab pillow PyMuPDF httpx python-multipart==0.0.9 \
+    opencv-python-headless==4.10.0.84 pytesseract==0.3.13 \
+    "dbt-core<1.9" dbt-postgres==1.8.2 \
+    pyspark==3.5.1

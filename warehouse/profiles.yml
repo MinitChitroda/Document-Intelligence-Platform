@@ -1,0 +1,12 @@
+document_warehouse:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: 127.0.0.1
+      user: postgres
+      password: ""
+      port: 55432
+      dbname: document_platform
+      schema: gold
+      threads: 4

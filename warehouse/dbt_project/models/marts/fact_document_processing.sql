@@ -1,0 +1,3 @@
+-- warehouse/dbt_project/models/marts/fact_document_processing.sql
+-- Gold mart: one row per document processing event.
+-- Week 3 — not yet implemented.

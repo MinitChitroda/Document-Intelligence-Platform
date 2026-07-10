@@ -1,0 +1,13 @@
+doc_id,filename,source_type,upload_date,uploader,page_count,file_size_kb,ocr_required,tags
+DOC-0001,annual_report_2023.pdf,text_pdf,2024-01-05,john.doe,42,1840,false,finance|annual|2023
+DOC-0002,scanned_invoice_jan.pdf,scanned_pdf,2024-01-06,jane.smith,3,2210,TRUE,invoice|accounts_payable
+DOC-0003,customer_data_q4.csv,csv,2024-01-06,JANE.SMITH,N/A,88,false,customer|q4|2023
+DOC-0004,board_minutes_dec2023.pdf,TEXT_PDF,2024-01-07,admin,8,310,false,board|governance|minutes
+DOC-0005,scanned_contract_vendor_a.pdf,scanned_pdf,07/01/2024,procurement,,4502,True,contract|vendor
+DOC-0006,sales_pipeline.csv,CSV,2024-01-08,sales.ops,N/A,215,false,sales|pipeline|crm
+DOC-0007,tax_filing_2023.pdf,text_pdf,2024-01-09,john.doe,24,980,false,tax|finance|2023
+DOC-0002,scanned_invoice_jan.pdf,scanned_pdf,2024-01-06,jane.smith,3,2210,TRUE,invoice|accounts_payable
+DOC-0008,hr_policy_v3.pdf,text_pdf,2024-01-10,,18,720,false,hr|policy
+DOC-0009,scanned_receipt_bundle.pdf,scanned_pdf,2024-01-10,finance.team,47,8830,yes,receipts|expense
+DOC-0010,vendor_sla_terms.pdf,text_pdf,10-01-2024,legal,12,445,FALSE,
+DOC-0011,returns_jan.csv,csv,2024-01-12,warehouse,N/A,134,false,returns|warehouse|jan
