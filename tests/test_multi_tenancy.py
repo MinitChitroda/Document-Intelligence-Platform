@@ -95,8 +95,8 @@ def recreate_clean_db():
     Base.metadata.create_all(bind=engine)
     
     # Clean Qdrant
-    import qdrant_client
-    q_client = qdrant_client.QdrantClient(host="localhost", port=6333)
+    from rag import qdrant_store
+    q_client = qdrant_store.get_client()
     try:
         q_client.delete_collection("document_chunks")
         print("Qdrant collection deleted.")
@@ -306,8 +306,8 @@ def main():
     
     # 11. Qdrant Search pre-filter validation
     print("\nValidating Qdrant Search Payload Pre-Filtering:")
-    import qdrant_client
-    q_client = qdrant_client.QdrantClient(host="localhost", port=6333)
+    from rag import qdrant_store
+    q_client = qdrant_store.get_client()
     
     qdrant_points = qc.get_point_count(q_client)
     print(f"  Total points in Qdrant collection: {qdrant_points}")

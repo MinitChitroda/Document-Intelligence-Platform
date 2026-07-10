@@ -30,21 +30,49 @@ from qdrant_client.models import (
 
 logger = logging.getLogger(__name__)
 
-QDRANT_HOST       = os.getenv("QDRANT_HOST", "localhost")
-QDRANT_PORT       = int(os.getenv("QDRANT_PORT", "6333"))
+QDRANT_URL        = os.getenv("QDRANT_URL")
+QDRANT_API_KEY    = os.getenv("QDRANT_API_KEY")
+QDRANT_HOST       = os.getenv("QDRANT_HOST")
+QDRANT_PORT       = os.getenv("QDRANT_PORT")
+
 COLLECTION_NAME   = "document_chunks"
 QUERY_CACHE_COLLECTION = "query_cache"
 VECTOR_DIMENSION  = 384          # all-MiniLM-L6-v2
 
+# Track connection for one-time startup logging
+_connected = False
 
 def get_client() -> QdrantClient:
     """Return a connected Qdrant client."""
-    return QdrantClient(
-        host=QDRANT_HOST,
-        port=QDRANT_PORT,
-        timeout=30,
-        check_compatibility=False,   # suppress client/server version mismatch warning
-    )
+    global _connected
+    
+    if QDRANT_URL:
+        client = QdrantClient(
+            url=QDRANT_URL,
+            api_key=QDRANT_API_KEY,
+            timeout=30,
+            check_compatibility=False
+        )
+        if not _connected:
+            logger.info("[QDRANT] Connected to Qdrant Cloud")
+            print("[QDRANT] Connected to Qdrant Cloud")
+            _connected = True
+        return client
+    elif QDRANT_HOST:
+        port = int(QDRANT_PORT) if QDRANT_PORT else 6333
+        client = QdrantClient(
+            host=QDRANT_HOST,
+            port=port,
+            timeout=30,
+            check_compatibility=False
+        )
+        if not _connected:
+            logger.info("[QDRANT] Connected to Local Docker Qdrant")
+            print("[QDRANT] Connected to Local Docker Qdrant")
+            _connected = True
+        return client
+    else:
+        raise RuntimeError("Qdrant configuration is missing. Must provide QDRANT_URL or QDRANT_HOST.")
 
 
 def ensure_collection(client: QdrantClient) -> None:

@@ -25,14 +25,15 @@ def get_producer():
             raise
     return _producer
 
-def publish_raw_document(document_id: str, filename: str, file_hash: str, file_type: str, tenant_id: str):
+def publish_raw_document(document_id: str, filename: str, file_hash: str, file_type: str, tenant_id: str, s3_key: str = None):
     producer = get_producer()
     message = {
         "document_id": document_id,
         "filename": filename,
         "hash": file_hash,
         "file_type": file_type,
-        "tenant_id": tenant_id
+        "tenant_id": tenant_id,
+        "s3_key": s3_key
     }
     
     # Use document_id as the partition key

@@ -19,6 +19,8 @@ import os
 import sys
 import uuid
 import logging
+import tempfile
+import numpy as np
 from datetime import date
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
@@ -27,6 +29,7 @@ from sentence_transformers import SentenceTransformer
 from qdrant_client.models import PointStruct
 
 from storage.postgres_bronze import SessionLocal, BronzeDocument
+from storage import s3_client
 from extraction.text_extraction import extract_text_native, chunk_text
 from extraction.ocr.extract import extract_text_ocr
 import rag.qdrant_store as qc
@@ -49,36 +52,26 @@ SOURCE_TYPE_MAP = {
 }
 
 
-def resolve_raw_path(file_hash: str) -> str | None:
-    """Find the physical file in data/raw/ by hash prefix."""
-    # Check tenant subfolder first
-    parts = file_hash.rsplit("_", 1)
-    if len(parts) == 2:
-        tenant_id = parts[0]
-        tenant_dir = os.path.join("data", "raw", tenant_id)
-        if os.path.isdir(tenant_dir):
-            for fname in os.listdir(tenant_dir):
-                if fname.startswith(file_hash):
-                    return os.path.join(tenant_dir, fname)
-
-    # Fallback to flat directory
-    raw_dir = "data/raw"
-    if not os.path.isdir(raw_dir):
-        return None
-    for fname in os.listdir(raw_dir):
-        if fname.startswith(file_hash):
-            return os.path.join(raw_dir, fname)
-    return None
-
-
 def extract_chunks(doc: BronzeDocument) -> list[dict]:
     """
-    Extract text chunks from a document.
+    Extract text chunks from a document by downloading it from S3.
     Returns list of dicts: {page_number, chunk_text}
     """
-    raw_path = resolve_raw_path(doc.file_hash)
-    if not raw_path:
-        print(f"  [WARN] Raw file not found for {doc.document_id[:8]}...")
+    ext = os.path.splitext(doc.filename)[1].lower() if doc.filename else ""
+    tenant_str = doc.tenant_id if doc.tenant_id else ""
+    if tenant_str:
+        s3_key = f"curated/{tenant_str}/{doc.file_hash}{ext}"
+    else:
+        s3_key = f"curated/{doc.file_hash}{ext}"
+        
+    fd, raw_path = tempfile.mkstemp(suffix=ext)
+    os.close(fd)
+    
+    success = s3_client.download_file(s3_key, raw_path)
+    if not success:
+        print(f"  [WARN] Failed to download {s3_key} from S3. Skipping.")
+        if os.path.exists(raw_path):
+            os.remove(raw_path)
         return []
 
     ext = os.path.splitext(raw_path)[1].lower() if raw_path else ""
@@ -150,6 +143,12 @@ def extract_chunks(doc: BronzeDocument) -> list[dict]:
     except Exception as e:
         print(f"  [ERROR] Extraction failed for {doc.document_id[:8]}...: {e}")
         return []
+    finally:
+        if os.path.exists(raw_path):
+            try:
+                os.remove(raw_path)
+            except Exception as e:
+                print(f"  [WARN] Failed to clean up temp file {raw_path}: {e}")
 
 
 def generate_document_summary(extracted_text: str) -> str:

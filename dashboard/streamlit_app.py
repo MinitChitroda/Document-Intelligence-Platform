@@ -670,9 +670,9 @@ with st.sidebar:
                             db_cat.query(BronzeDocument).filter(BronzeDocument.document_id == doc.document_id).delete()
                             db_cat.commit()
                             try:
-                                import qdrant_client
+                                from rag import qdrant_store
                                 from qdrant_client.http.models import Filter, FieldCondition, MatchValue
-                                q_client = qdrant_client.QdrantClient(host="localhost", port=6333)
+                                q_client = qdrant_store.get_client()
                                 q_client.delete(
                                     collection_name="document_chunks",
                                     points_selector=Filter(

@@ -4,6 +4,7 @@ from ingestion.idempotency import get_db, compute_hash, Document, init_db
 from ingestion.kafka_producer import publish_raw_document
 from rag.query_router import route_query
 from rag.retrieval_v2 import preload_model
+from storage import s3_client
 import mimetypes
 
 import os
@@ -16,7 +17,6 @@ def on_startup():
     # In a production app, we would use Alembic for migrations,
     # but for this prototype we'll create the tables on startup.
     init_db()
-    os.makedirs(os.path.join("data", "raw"), exist_ok=True)
     preload_model()
 
 @app.post("/upload")
@@ -46,13 +46,11 @@ async def upload_document(
     if file.filename:
         _, ext = os.path.splitext(file.filename)
     
-    # Save the physical file (inside a tenant-specific folder)
-    tenant_dir = os.path.join("data", "raw", tenant_id)
-    os.makedirs(tenant_dir, exist_ok=True)
-    target_path = os.path.join(tenant_dir, f"{tenant_id}_{file_hash}{ext}")
-    logging.info(f"DEBUG_API: target_path resolved to: {os.path.abspath(target_path)}")
-    with open(target_path, "wb") as f:
-        f.write(content)
+    # Upload to S3
+    s3_key = f"raw/{tenant_id}/{tenant_id}_{file_hash}{ext}"
+    success = s3_client.upload_file_bytes(content, s3_key)
+    if not success:
+        raise HTTPException(status_code=500, detail="Failed to upload document to S3")
         
     # If new, insert into database
     new_doc = Document(file_hash=file_hash, status="pending", tenant_id=tenant_id, filename=file.filename)
@@ -68,7 +66,8 @@ async def upload_document(
         filename=file.filename or "unknown",
         file_hash=f"{tenant_id}_{file_hash}", # Use the unique file name hash to avoid extraction collisions
         file_type=content_type,
-        tenant_id=tenant_id
+        tenant_id=tenant_id,
+        s3_key=s3_key
     )
     
     return {"status": "accepted", "document_id": new_doc.document_id}

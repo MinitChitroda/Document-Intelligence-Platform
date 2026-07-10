@@ -15,13 +15,15 @@ Usage:
 import os
 import re
 import sys
-
+import uuid
+import tempfile
 import pandas as pd
 
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 
 from rag.groq_client import get_groq_manager
 from rag.query_classifier import classify_query
+from storage import s3_client
 
 # ── Safety gate: forbidden tokens in LLM-generated code ───────────────────────
 FORBIDDEN_CODE_TOKENS = [
@@ -41,25 +43,23 @@ def _is_safe_code(code: str) -> bool:
 
 
 # ── CSV selection helper ───────────────────────────────────────────────────────
-def _resolve_raw_path(file_hash: str) -> str | None:
-    """Find a physical file in data/raw/ by file_hash prefix."""
-    # Check tenant subfolder first
-    parts = file_hash.rsplit("_", 1)
-    if len(parts) == 2:
-        tenant_id = parts[0]
-        tenant_dir = os.path.join("data", "raw", tenant_id)
-        if os.path.isdir(tenant_dir):
-            for fname in os.listdir(tenant_dir):
-                if fname.startswith(file_hash):
-                    return os.path.join(tenant_dir, fname)
-
-    # Fallback to flat directory
-    raw_dir = "data/raw"
-    if not os.path.isdir(raw_dir):
-        return None
-    for fname in os.listdir(raw_dir):
-        if fname.startswith(file_hash):
-            return os.path.join(raw_dir, fname)
+def _download_curated_csv(doc) -> str | None:
+    """Download a curated CSV from S3 to a temporary file."""
+    ext = os.path.splitext(doc.filename)[1].lower() if doc.filename else ".csv"
+    tenant_str = doc.tenant_id if doc.tenant_id else ""
+    if tenant_str:
+        s3_key = f"curated/{tenant_str}/{doc.file_hash}{ext}"
+    else:
+        s3_key = f"curated/{doc.file_hash}{ext}"
+        
+    fd, raw_path = tempfile.mkstemp(suffix=ext)
+    os.close(fd)
+    
+    if s3_client.download_file(s3_key, raw_path):
+        return raw_path
+    
+    if os.path.exists(raw_path):
+        os.remove(raw_path)
     return None
 
 
@@ -78,7 +78,7 @@ def _pick_best_csv(csv_docs: list, query: str) -> tuple:
     best_score = -1
 
     for doc in csv_docs:
-        raw_path = _resolve_raw_path(doc.file_hash)
+        raw_path = _download_curated_csv(doc)
         if not raw_path:
             continue
         try:
@@ -95,12 +95,18 @@ def _pick_best_csv(csv_docs: list, query: str) -> tuple:
                 best_path  = raw_path
                 best_df    = df
         except Exception:
-            continue
+            pass
+        finally:
+            if best_path != raw_path and os.path.exists(raw_path):
+                try:
+                    os.remove(raw_path)
+                except:
+                    pass
 
     # Fallback: use most recent doc even if headers didn't match
     if best_doc is None and csv_docs:
         for doc in csv_docs:
-            raw_path = _resolve_raw_path(doc.file_hash)
+            raw_path = _download_curated_csv(doc)
             if not raw_path:
                 continue
             try:
@@ -111,7 +117,18 @@ def _pick_best_csv(csv_docs: list, query: str) -> tuple:
                 best_df   = df
                 break
             except Exception:
+                if os.path.exists(raw_path):
+                    try:
+                        os.remove(raw_path)
+                    except:
+                        pass
                 continue
+
+    if best_path and os.path.exists(best_path):
+        try:
+            os.remove(best_path)
+        except:
+            pass
 
     return best_doc, best_path, best_df
 
