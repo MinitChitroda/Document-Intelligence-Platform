@@ -53,10 +53,7 @@ services:
   # Memory Limit: 256 MB
   # ---------------------------------------------------------------------------
   fastapi:
-    build:
-      context: ..
-      dockerfile: infra/Dockerfile.airflow
-    image: document-platform:latest
+    image: minitchitrooda/document-platform:latest
     container_name: ddp_fastapi_free
     ports:
       - "8000:8000"
@@ -82,7 +79,7 @@ services:
   # Memory Limit: 256 MB
   # ---------------------------------------------------------------------------
   kafka-consumer:
-    image: document-platform:latest
+    image: minitchitrooda/document-platform:latest
     container_name: ddp_kafka_consumer_free
     volumes:
       - ..:/app
@@ -106,7 +103,7 @@ services:
   # Memory Limit: 512 MB
   # ---------------------------------------------------------------------------
   streamlit:
-    image: document-platform:latest
+    image: minitchitrooda/document-platform:latest
     container_name: ddp_streamlit_free
     ports:
       - "8501:8501"
