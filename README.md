@@ -62,7 +62,7 @@ Every extracted document is scored before it is accepted. The gate enforces:
 - **Minimum OCR confidence** — rejects images that Tesseract could not read reliably.
 - **CSV structural validation** — rejects files that don't parse into valid columns/rows.
 
-Documents that **PASS** are written to `bronze_documents` in PostgreSQL with status `curated`. Documents that **FAIL** are written with status `failed` and the raw file is archived to `data/failed/`.
+Documents that **PASS** are written to `bronze_documents` in PostgreSQL (AWS RDS) with status `curated`. Documents that **FAIL** are written with status `failed`. The original raw files in AWS S3 are moved to `curated/` or `failed/` prefixes accordingly.
 
 ### Layer 4 — Embedding & Vector Storage (`rag/`)
 
@@ -149,42 +149,65 @@ Zero data bleed between tenants has been verified via explicit cross-tenant isol
 
 ---
 
-## Quick Start
+## EC2 Deployment (AWS Free Tier)
+
+This project is optimized for deployment on AWS Free Tier (`t2.micro` / `t3.micro`) using managed services (RDS, S3, Qdrant Cloud).
 
 ### Prerequisites
-- Docker Desktop (running)
-- Python 3.11
-- Tesseract OCR installed (`tesseract --version`)
-- Gemini API key(s) in `.env`
+- Docker and Docker Compose installed on EC2.
+- AWS RDS (PostgreSQL) running.
+- AWS S3 Bucket created.
+- Qdrant Cloud Cluster running.
 
-### 1. Start Infrastructure
+### 1. Configure Environment
+Create a `.env` file in the project root:
 
-```bash
-# Start Kafka, Postgres, and Qdrant
-cd infra/
-docker compose up -d
-docker compose ps          # wait for (healthy) status
+```ini
+# AWS S3
+AWS_ACCESS_KEY_ID=your_access_key
+AWS_SECRET_ACCESS_KEY=your_secret_key
+AWS_REGION=us-east-1
+S3_BUCKET_NAME=your-bucket-name
+
+# AWS RDS
+DATABASE_URL=postgresql://user:password@your-rds-endpoint.amazonaws.com:5432/postgres
+
+# Qdrant Cloud
+QDRANT_URL=https://your-cluster.aws.cloud.qdrant.io
+QDRANT_API_KEY=your_qdrant_api_key
+
+# Gemini API
+GEMINI_API_KEY_1=your_gemini_key
+
+# Kafka
+KAFKA_BOOTSTRAP_SERVERS=kafka:29092
 ```
 
-### 2. Configure Environment
+### 2. Build and Deploy
+
+The deployment uses optimized Docker images that cache dependencies at build time to reduce RAM usage and startup time.
 
 ```bash
-cp .env.example .env
-# Fill in your Gemini API keys in .env
+# Build the optimized Docker images
+docker compose -f infra/docker-compose-free.yml build
+
+# Start the services in detached mode
+docker compose -f infra/docker-compose-free.yml up -d
 ```
 
-### 3. Install Dependencies & Launch
+### 3. Verify Deployment
 
 ```bash
-python -m venv .venv
-.venv\Scripts\activate      # Windows
-pip install -r requirements.txt
+# Check running containers
+docker ps
 
-# Start all services with a single command
-python run_app.py
+# Check logs to ensure no pip install loops
+docker logs ddp_fastapi_free
+docker logs ddp_kafka_consumer_free
+docker logs ddp_streamlit_free
 ```
 
-Open `http://localhost:8501` in your browser.
+Open `http://<YOUR_EC2_PUBLIC_IP>:8501` in your browser.
 
 ---
 
