@@ -6,3 +6,7 @@ data/raw
 data/failed
 data/curated
 *.pyc
+**/.terraform
+**/.terraform.lock.hcl
+**/*.tfstate
+**/*.tfstate.*
