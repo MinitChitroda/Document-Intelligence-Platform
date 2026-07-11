@@ -56,6 +56,7 @@ services:
     build:
       context: ..
       dockerfile: infra/Dockerfile.airflow
+    image: document-platform:latest
     container_name: ddp_fastapi_free
     ports:
       - "8000:8000"
@@ -81,9 +82,7 @@ services:
   # Memory Limit: 256 MB
   # ---------------------------------------------------------------------------
   kafka-consumer:
-    build:
-      context: ..
-      dockerfile: infra/Dockerfile.airflow
+    image: document-platform:latest
     container_name: ddp_kafka_consumer_free
     volumes:
       - ..:/app
@@ -107,9 +106,7 @@ services:
   # Memory Limit: 512 MB
   # ---------------------------------------------------------------------------
   streamlit:
-    build:
-      context: ..
-      dockerfile: infra/Dockerfile.airflow
+    image: document-platform:latest
     container_name: ddp_streamlit_free
     ports:
       - "8501:8501"
