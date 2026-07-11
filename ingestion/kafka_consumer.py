@@ -76,21 +76,20 @@ def run_consumer():
             
         logger.info(f"DEBUG_CONSUMER: Downloaded {s3_key} to temp file {raw_path}")
         
-        try:
-            # Determine source_type
-            source_type = "unknown"
-            if filename.lower().endswith(".csv") or file_type == "text/csv":
-                source_type = "csv"
-            elif filename.lower().endswith(".pdf"):
-                if os.path.exists(raw_path):
-                    source_type = classify_pdf(raw_path)
-                else:
-                    logger.warning(f"File not found on disk: {raw_path}")
-                    source_type = "text_pdf" # fallback
-            elif filename.lower().endswith((".png", ".jpg", ".jpeg")):
-                source_type = "scanned_pdf" # Treats images same as scanned PDFs
-            elif filename.lower().endswith(".txt"):
-                source_type = "text_native"
+        # Determine source_type
+        source_type = "unknown"
+        if filename.lower().endswith(".csv") or file_type == "text/csv":
+            source_type = "csv"
+        elif filename.lower().endswith(".pdf"):
+            if os.path.exists(raw_path):
+                source_type = classify_pdf(raw_path)
+            else:
+                logger.warning(f"File not found on disk: {raw_path}")
+                source_type = "text_pdf" # fallback
+        elif filename.lower().endswith((".png", ".jpg", ".jpeg")):
+            source_type = "scanned_pdf" # Treats images same as scanned PDFs
+        elif filename.lower().endswith(".txt"):
+            source_type = "text_native"
 
         # --- DB-02 Fix: Extract metrics at ingestion time so V1 records are non-NULL ---
         ocr_confidence = None
@@ -199,13 +198,12 @@ def run_consumer():
         else:
             logger.info(f"Document {doc_id} already exists in Bronze.")
             
-        finally:
-            if 'raw_path' in locals() and os.path.exists(raw_path):
-                try:
-                    os.remove(raw_path)
-                    logger.info(f"Cleaned up temp file {raw_path}")
-                except Exception as cleanup_err:
-                    logger.warning(f"Failed to clean up temp file {raw_path}: {cleanup_err}")
+        if 'raw_path' in locals() and os.path.exists(raw_path):
+            try:
+                os.remove(raw_path)
+                logger.info(f"Cleaned up temp file {raw_path}")
+            except Exception as cleanup_err:
+                logger.warning(f"Failed to clean up temp file {raw_path}: {cleanup_err}")
 
 if __name__ == "__main__":
     run_consumer()
