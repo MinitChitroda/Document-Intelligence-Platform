@@ -4,10 +4,7 @@
 
 <br>
 
-## What Is This?
-
 Most RAG pipelines are simple: you chuck a PDF into a vector database and ask questions. This platform is different.
-
 It is a **fully automated data engineering pipeline** that handles the messy real world — scanned documents with poor quality, multi-tenant user isolation, tabular spreadsheets that trip up vector search — and delivers trustworthy, cited answers. Every single claim made by the LLM is backed by a retrieved document chunk, and the system is architecturally **gated from hallucinating**.
 
 ---
@@ -20,8 +17,6 @@ The platform is composed of 6 distinct layers that work in sequence:
 
 ---
 
-
-## Layer-by-Layer Breakdown
 
 ### Layer 1 — Ingestion (`ingestion/`)
 
@@ -134,80 +129,26 @@ Zero data bleed between tenants has been verified via explicit cross-tenant isol
 
 ---
 
-## Evaluation & Proof of Work
+## Cloud Deployment (AWS) & CI/CD
 
-| Test | Result |
-|---|---|
-| PDF Classification Accuracy | **9/9 (100%)** — correctly routed text-native vs scanned PDFs |
-| Idempotency (SHA-256 dedup) | **5/5 (100%)** — duplicate uploads correctly rejected |
-| OCR Extraction (scanned PDFs) | **92.22% avg Tesseract confidence** |
-| RAG Retrieval Precision@5 | **95.5% overall** (text_native: 100%, scanned_pdf: 100%, image: 66.7%) |
-| Custom Doc Integration Test | **4/4 (100%)** — questions answered correctly from newly uploaded documents |
-| Multi-tenant Isolation Test | **PASS** — zero data bleed across 3 tenants, 15 documents |
-| dbt Gold Rebuild | **PASS=5, WARN=0, ERROR=0** — all 13 data quality tests pass |
-| End-to-End Pipeline | **PASS** — FastAPI → Kafka → Extraction → QG → Bronze → dbt Gold → Qdrant → RAG |
+This project is architected for deployment on AWS using managed services (AWS RDS, AWS S3, Qdrant Cloud) and a fully automated CI/CD pipeline.
 
----
+### Architectural Changes for the Cloud
+1. **Unified Dockerization**: The FastAPI, Kafka Consumer, and Streamlit apps are packaged into optimized Docker containers via `infra/docker-compose-free.yml`.
+2. **Managed Infrastructure**: Stateful services were decoupled from Docker. PostgreSQL runs on AWS RDS, Vector Storage uses Qdrant Cloud, and File Storage uses AWS S3 (`boto3`).
+3. **CORS & Networking**: FastAPI is configured with restrictive CORS middleware, and Streamlit disables XSRF/CORS to allow the UI to communicate over the public internet seamlessly.
+4. **CI/CD Pipeline**: GitHub Actions (`.github/workflows/deploy.yml`) is configured to automatically SSH into the EC2 instance, pull the latest `main` branch, rebuild images, and restart containers with zero downtime on every push.
 
-## EC2 Deployment (AWS Free Tier)
-
-This project is optimized for deployment on AWS Free Tier (`t2.micro` / `t3.micro`) using managed services (RDS, S3, Qdrant Cloud).
-
-### Prerequisites
-- Docker and Docker Compose installed on EC2.
-- AWS RDS (PostgreSQL) running.
-- AWS S3 Bucket created.
+### AWS Setup Prerequisites
+- AWS EC2 Instance with Docker and Docker Compose installed.
+- AWS RDS (PostgreSQL) and AWS S3 Bucket created.
 - Qdrant Cloud Cluster running.
 
-### 1. Configure Environment
-Create a `.env` file in the project root:
-
-```ini
-# AWS S3
-AWS_ACCESS_KEY_ID=your_access_key
-AWS_SECRET_ACCESS_KEY=your_secret_key
-AWS_REGION=us-east-1
-S3_BUCKET_NAME=your-bucket-name
-
-# AWS RDS
-DATABASE_URL=postgresql://user:password@your-rds-endpoint.amazonaws.com:5432/postgres
-
-# Qdrant Cloud
-QDRANT_URL=https://your-cluster.aws.cloud.qdrant.io
-QDRANT_API_KEY=your_qdrant_api_key
-
-# Gemini API
-GEMINI_API_KEY_1=your_gemini_key
-
-# Kafka
-KAFKA_BOOTSTRAP_SERVERS=kafka:29092
-```
-
-### 2. Build and Deploy
-
-The deployment uses optimized Docker images that cache dependencies at build time to reduce RAM usage and startup time.
-
+To deploy manually on EC2:
 ```bash
-# Build the optimized Docker images
-docker compose -f infra/docker-compose-free.yml build
-
-# Start the services in detached mode
-docker compose -f infra/docker-compose-free.yml up -d
+docker compose -f infra/docker-compose-free.yml up -d --build
 ```
-
-### 3. Verify Deployment
-
-```bash
-# Check running containers
-docker ps
-
-# Check logs to ensure no pip install loops
-docker logs ddp_fastapi_free
-docker logs ddp_kafka_consumer_free
-docker logs ddp_streamlit_free
-```
-
-Open `http://<YOUR_EC2_PUBLIC_IP>:8501` in your browser.
+Open `http://<YOUR_EC2_PUBLIC_IP>:80` in your browser.
 
 ---
 
@@ -246,21 +187,6 @@ Open `http://<YOUR_EC2_PUBLIC_IP>:8501` in your browser.
 
 ---
 
-## Tech Stack
-
-| Category | Technology |
-|---|---|
-| API | FastAPI + Uvicorn |
-| Event Streaming | Apache Kafka 3.8 (KRaft mode) |
-| Relational DB | PostgreSQL 15 |
-| Vector DB | Qdrant |
-| Embeddings | `all-MiniLM-L6-v2` (sentence-transformers) |
-| LLM | Google Gemini 2.5-flash / 1.5-flash |
-| OCR | Tesseract + OpenCV |
-| PDF Extraction | PyMuPDF (fitz) |
-| Warehouse | dbt-core + dbt-postgres |
-| Orchestration | Apache Airflow |
-| Batch Processing | PySpark |
-| Frontend | Streamlit |
-| Containerization | Docker Compose |
-| Language | Python 3.11 |
+<div align="center">
+  <b>Developed by <a href="mailto:minitchitroda@gmail.com">Minit Chitroda</a></b>
+</div>
