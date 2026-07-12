@@ -62,11 +62,7 @@ services:
     working_dir: /app
     env_file: ../.env
     environment:
-      # These variables will be sourced automatically from the .env file
-      - DATABASE_URL
       - KAFKA_BROKER=kafka:29092
-      - QDRANT_URL
-      - QDRANT_API_KEY
     command: uvicorn ingestion.api:app --host 0.0.0.0 --port 8000
     depends_on:
       kafka:
@@ -86,11 +82,7 @@ services:
     working_dir: /app
     env_file: ../.env
     environment:
-      # Sourced from .env
-      - DATABASE_URL
       - KAFKA_BROKER=kafka:29092
-      - QDRANT_URL
-      - QDRANT_API_KEY
     command: python ingestion/kafka_consumer.py
     depends_on:
       kafka:
@@ -113,10 +105,6 @@ services:
     env_file: ../.env
     environment:
       - API_URL=http://fastapi:8000
-      # Sourced from .env
-      - DATABASE_URL
-      - QDRANT_URL
-      - QDRANT_API_KEY
     command: streamlit run dashboard/streamlit_app.py --server.port=8501 --server.address=0.0.0.0 --server.enableCORS=false --server.enableXsrfProtection=false
     depends_on:
       - fastapi
