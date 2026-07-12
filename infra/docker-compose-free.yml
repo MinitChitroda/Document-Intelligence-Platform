@@ -117,7 +117,7 @@ services:
       - DATABASE_URL
       - QDRANT_URL
       - QDRANT_API_KEY
-    command: streamlit run dashboard/streamlit_app.py --server.port=8501 --server.address=0.0.0.0
+    command: streamlit run dashboard/streamlit_app.py --server.port=8501 --server.address=0.0.0.0 --server.enableCORS=false --server.enableXsrfProtection=false
     depends_on:
       - fastapi
     mem_limit: 512m
