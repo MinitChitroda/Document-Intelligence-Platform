@@ -15,6 +15,7 @@ WORKDIR /app
 # Copy requirements first for layer caching
 COPY requirements.txt /app/requirements.txt
 RUN pip install --no-cache-dir --default-timeout=1000 -r requirements.txt
+RUN pip install groq
 
 # Copy the rest of the project
 COPY . /app/
